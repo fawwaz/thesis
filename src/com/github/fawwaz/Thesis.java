@@ -16,6 +16,7 @@ public class Thesis {
      */
     public static void main(String[] args) {
         // TODO code application logic here
+        boolean isTraining = false;
     }
     
 }
