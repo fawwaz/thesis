@@ -34,6 +34,7 @@ public class MyPipe extends Pipe {
     private PreparedStatement preparedstatement = null;
     private ResultSet resultset = null;
     HashMap<String, String> word_to_postag;
+    ArrayList<String> gazeteer;
     
     public MyPipe(boolean dofeatureinduction,String url, String username,String password){
         super(new Alphabet(),new LabelAlphabet());
@@ -41,8 +42,10 @@ public class MyPipe extends Pipe {
         
         // Untuk postag.. retrieve dulu semuanya
         word_to_postag = new HashMap<>();
+        gazeteer = new ArrayList<>();
         startConnection(url, username, password);
         retrievePOSTagFromDB();
+        retrieveGazeteerFromDB();
         CloseConnection();
     }
 
@@ -95,8 +98,113 @@ public class MyPipe extends Pipe {
             }
             
             // Custom Feature here ..
+            int feature_idx;
             
+            // Feature 1 : Current pos Tag
+            if(getPOSTag(tokens[l][0]) != null){
+                feature_idx = features.lookupIndex(getPOSTag(tokens[l][0]));
+                if(feature_idx >= 0){
+                    featureIndices.add(feature_idx);
+                }
+            }
             
+            // Feature 2 :  // Jangan lupa untuk memastikan gak ada saling overlap.. tuer sslmeuanya di ubah ke feature indices 
+            // Todolist selanjutnya adalah test bikin updater untuk cross validation biar bisa diukur
+            // setelah itu bikin class untuk cross document feature tambahkan disini
+            // run ulang ..
+            if (tokens[l][0].matches("\\d+")) {
+                feature_idx = features.lookupIndex("ISNUMBER");
+                if (feature_idx >= 0) {
+                    featureIndices.add(feature_idx);
+                }
+            } 
+
+            if (tokens[l][0].matches("\\p{P}")) {
+                feature_idx = features.lookupIndex("PUNCTUATION");
+
+                if (feature_idx >= 0) {
+                    featureIndices.add(feature_idx);
+                }
+            }
+
+            if (tokens[l][0].matches("(di|@|d|ke|k)")) {
+                feature_idx = features.lookupIndex("ISPLACEDIRECTIVE");
+
+                if (feature_idx >= 0) {
+                    featureIndices.add(feature_idx);
+                }
+            }
+
+            if (tokens[l][0].matches("http://t\\.co/\\w+")) {
+                feature_idx =  features.lookupIndex("ISURL");
+
+                if (feature_idx >= 0) {
+                    featureIndices.add(feature_idx);
+                }
+            }
+
+            if (tokens[l][0].matches("@\\w+")) {
+                feature_idx = features.lookupIndex("ISMENTION");
+
+                if (feature_idx >= 0) {
+                    featureIndices.add(feature_idx);
+                }
+            }
+
+            if (tokens[l][0].matches("#\\w+")) {
+                feature_idx = features.lookupIndex("ISHASHTAG");
+
+                if (feature_idx >= 0) {
+                    featureIndices.add(feature_idx);
+                }
+            }
+
+            if (tokens[l][0].matches(Twokenize.varian_bulan)) {
+                feature_idx = features.lookupIndex("ISMONTHNAME");
+
+                if (feature_idx >= 0) {
+                    featureIndices.add(feature_idx);
+                }
+            }
+
+            if (isGazetteer(tokens[l][0])) {
+                feature_idx = features.lookupIndex("ISGAZETTEER");
+
+                if (feature_idx >= 0) {
+                    featureIndices.add(feature_idx);
+                }
+            } 
+
+            // Tambahkan juga fitur previous postag dan
+            if (l > 0 && l < tokens.length - 1) {
+                if (tokens[l - 1][0].matches("\\d+") && tokens[l][0].matches("[/\\-]") && tokens[l + 1][0].matches("\\d+")) {
+                    feature_idx = features.lookupIndex("DATESEPARATOR");
+
+                    if (feature_idx >= 0) {
+                        featureIndices.add(feature_idx);
+                    }
+                }
+
+                if (getPOSTag(tokens[l - 1][0]) != null) {
+                    feature_idx = features.lookupIndex("Prev" + getPOSTag(tokens[l - 1][0]));
+
+                    if (feature_idx >= 0) {
+                        featureIndices.add(feature_idx);
+                    }
+                }
+
+                if (getPOSTag(tokens[l + 1][0]) != null) {
+                    feature_idx = features.lookupIndex("After" + getPOSTag(tokens[l + 1][0]));
+
+                    if (feature_idx >= 0) {
+                        featureIndices.add(feature_idx);
+                    }
+                }
+
+                // Nambahin dulu kalau learning
+            }
+
+
             // Convert from arraylist to array[]
             int[] featureIndicesArr = new int[featureIndices.size()];
             for (int index = 0; index < featureIndices.size(); index++) {
@@ -152,7 +260,6 @@ public class MyPipe extends Pipe {
         try {
             preparedstatement = connection.prepareStatement("select * from tb_katadasar;");
             resultset = preparedstatement.executeQuery();
-            Integer a = 0;
             while (resultset.next()) {
                 String kata = resultset.getString("katadasar");
                 String postag = resultset.getString("tipe_katadasar");
@@ -164,7 +271,24 @@ public class MyPipe extends Pipe {
         }
     }
     
-    // Buat tes doang .. 
+    private void retrieveGazeteerFromDB(){
+        try {
+            preparedstatement = connection.prepareStatement("select distinct location from gazetteer;");
+            resultset = preparedstatement.executeQuery();
+            while (resultset.next()) {
+                gazeteer.add(resultset.getString("location"));
+            }
+            System.out.println("[INFO] POSTAG Retrieved");
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+    
+    public boolean isGazetteer(String word){
+        return gazeteer.contains(word);
+    }
+
+    
     public String getPOSTag(String word) {
         if (word_to_postag.get(word) == null) {
             if (word.matches("\\bke\\w+an\\b|\\bpe\\w+an\\b|\\bpe\\w+\\b|\\b\\w+an\\b|\\bke\\w+\\b|\\b\\w+at\\b|\\b\\w+in\\b")) {
@@ -197,6 +321,7 @@ public class MyPipe extends Pipe {
         }
     }
     
+    /* For testing purpose ... */
     public static void main(String[] args){
         String DB_USERNAME = "root";
         String DB_PASSWORD = "";
@@ -207,5 +332,10 @@ public class MyPipe extends Pipe {
         System.out.println("POS Tag untuk kata fikir adalah : "+ testpipe.getPOSTag("fikir"));
         System.out.println("POS Tag untuk kata embun adalah : "+ testpipe.getPOSTag("embun"));
         System.out.println("POS Tag untuk kata english adalah : "+ testpipe.getPOSTag("english"));
+        
+        System.out.println("Gazeteer untuk kata bandung : "+ testpipe.isGazetteer("bandung"));
+        System.out.println("Gazeteer untuk kata bebas : "+ testpipe.isGazetteer("bebas"));
+                
     }
+    /**/
 }

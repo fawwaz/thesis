@@ -96,7 +96,7 @@ public class Trainer {
         //training_file = new FileReader(new File(trainingfile));
         
         // 2.2
-        Pipe pipe = new MyPipe(doFeatureInduction);
+        Pipe pipe = new MyPipe(doFeatureInduction,DB_URL,DB_USERNAME,DB_PASSWORD);
         pipe.getTargetAlphabet().lookupIndex(defaultlabel);
 
         // 3.1

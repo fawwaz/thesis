@@ -18,6 +18,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.Reader;
@@ -45,6 +46,8 @@ public class Tester {
     Integer fold_num, how_many_fold;
     int output_mode;
     CRF crf;
+    
+    FileWriter writer;
 
     InstanceList testdata;
 
@@ -119,6 +122,7 @@ public class Tester {
 
                     Integer base = Integer.valueOf((String) testdata.get(i).getName());
                     Integer curr_sequence_id = base + j + offset_sequence;
+                    System.out.println("Curr sequence : " + curr_sequence_id + " iterasi " + fold_num + " offset "+ offset_sequence + " base "+ base);
                     //updater.UpdateLabelAnotasiTweetFinal(buf.toString(), curr_sequence_id, iterasi);
                     System.out.println(">" + buf.toString() ); //+ " Name (Start): " + curr_sequence_id);
                 }
@@ -137,5 +141,19 @@ public class Tester {
             answers = lattice.bestOutputSequences(k).toArray(new Sequence[0]);
         }
         return answers;
+    }
+    
+    private void configureWriter(){
+        File file = new File("buffer_hasil_prediction");
+        file.createNewFile();
+        writer = new FileWriter(file);
+    }
+    private void writeToExternalFile(String){
+        writer.
+    }
+            
+    private void closeWriter(){
+        writer.flush();
+        writer.close();
     }
 }

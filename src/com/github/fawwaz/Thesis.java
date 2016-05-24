@@ -19,8 +19,8 @@ public class Thesis {
      */
     public static void main(String[] args) {
         // TODO code application logic here
-        boolean isTraining = false; // untuk training
-        boolean isTesting = true; // untuk labelling (prediction) , evaluating beda lagi.. (ngitung cross validation..)
+        boolean isTraining = true; // untuk training
+        boolean isTesting = false; // untuk labelling (prediction) , evaluating beda lagi.. (ngitung cross validation..)
         Integer fold_num = 1;
         Integer how_many_fold = 4;
         String DB_USERNAME = "root";
