@@ -1,0 +1,1 @@
+select * from (select * from (select * from tweet_baru_sanitized limit 5000,5000) as t2 where is_labelled_anotator1=1) as t where text like "%UNESA%"

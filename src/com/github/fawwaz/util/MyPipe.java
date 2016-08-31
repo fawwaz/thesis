@@ -13,6 +13,9 @@ import cc.mallet.types.FeatureVector;
 import cc.mallet.types.FeatureVectorSequence;
 import cc.mallet.types.LabelAlphabet;
 import cc.mallet.types.LabelSequence;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -29,28 +32,30 @@ import java.util.HashMap;
 public class MyPipe extends Pipe {
     
     boolean dofeatureinduction;
-    private Connection connection = null;
-    private Statement statement = null;
-    private PreparedStatement preparedstatement = null;
-    private ResultSet resultset = null;
-    HashMap<String, String> word_to_postag;
-    ArrayList<String> gazeteer;
+    private static HashMap<String, String> word_to_postag;
+    private static ArrayList<String> gazeteer;
     
-    public MyPipe(boolean dofeatureinduction,String url, String username,String password){
+    public MyPipe(boolean dofeatureinduction){
         super(new Alphabet(),new LabelAlphabet());
         this.dofeatureinduction = dofeatureinduction;
         
         // Untuk postag.. retrieve dulu semuanya
         word_to_postag = new HashMap<>();
         gazeteer = new ArrayList<>();
-        startConnection(url, username, password);
-        retrievePOSTagFromDB();
-        retrieveGazeteerFromDB();
-        CloseConnection();
+        readGazeteer();
+        readPosTag();
+        
     }
 
     @Override
     public Instance pipe(Instance carrier) {
+        
+        if(word_to_postag == null || gazeteer == null){
+            word_to_postag = new HashMap<>();
+            gazeteer = new ArrayList<>();
+            readGazeteer();
+            readPosTag();
+        }
         // Inisiasi seluruh variabel lokal
         Object inputData = carrier.getData();
         Alphabet features = getDataAlphabet();
@@ -240,50 +245,6 @@ public class MyPipe extends Pipe {
         return tokens;
     }
     
-    private void startConnection(String URL, String DB_USERNAME, String DB_PASSWORD) {
-        System.out.println("[INFO] Getting environment variables");
-        System.out.println("DB_USERNAME \t: " + DB_USERNAME);
-        System.out.println("DB_PASSWORD \t: " + DB_PASSWORD);
-        System.out.println("URL \t\t:" + URL);
-
-        try {
-            Class.forName("com.mysql.jdbc.Driver");
-            connection = (Connection) DriverManager.getConnection(URL, DB_USERNAME, DB_PASSWORD);
-        }catch (ClassNotFoundException e1) {
-            e1.printStackTrace();
-        }catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-    
-    private void retrievePOSTagFromDB(){
-        try {
-            preparedstatement = connection.prepareStatement("select * from tb_katadasar;");
-            resultset = preparedstatement.executeQuery();
-            while (resultset.next()) {
-                String kata = resultset.getString("katadasar");
-                String postag = resultset.getString("tipe_katadasar");
-                word_to_postag.put(kata,postag);
-            }
-            System.out.println("[INFO] POSTAG Retrieved");
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-    
-    private void retrieveGazeteerFromDB(){
-        try {
-            preparedstatement = connection.prepareStatement("select distinct location from gazetteer;");
-            resultset = preparedstatement.executeQuery();
-            while (resultset.next()) {
-                gazeteer.add(resultset.getString("location"));
-            }
-            System.out.println("[INFO] POSTAG Retrieved");
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-    
     public boolean isGazetteer(String word){
         return gazeteer.contains(word);
     }
@@ -305,33 +266,45 @@ public class MyPipe extends Pipe {
         }
     }
     
-    private void CloseConnection() {
-        try {
-            if (resultset != null) {
-                resultset.close();
+    public void readGazeteer(){
+        String filename = "gazeteer";
+        try(BufferedReader br = new BufferedReader(new FileReader(filename))){
+            String line;
+            while((line = br.readLine()) != null){
+                gazeteer.add(line);
             }
-            if (statement != null) {
-                statement.close();
-            }
-            if (connection != null) {
-                connection.close();
-            }
-        } catch (Exception e) {
+        }catch(IOException e){
             e.printStackTrace();
         }
     }
     
-    /* For testing purpose ... */
+    public void readPosTag(){
+        String filename = "dictionary_postag";
+        try(BufferedReader br = new BufferedReader(new FileReader(filename))){
+            String line;
+            while((line = br.readLine()) != null){
+                String[] pair = line.split(":");
+                word_to_postag.put(pair[0],pair[1]);
+            }
+        }catch(IOException e){
+            e.printStackTrace();
+        }
+    }
+    
+    
+    /* For testing purpose ... 
     public static void main(String[] args){
         String DB_USERNAME = "root";
         String DB_PASSWORD = "";
         String DB_URL = "jdbc:mysql://localhost/mytomcatapp";
-        MyPipe testpipe = new MyPipe(false,DB_URL,DB_USERNAME,DB_PASSWORD);
+        MyPipe testpipe = new MyPipe(false);
+        
         System.out.println("POS Tag untuk kata ajar adalah : "+ testpipe.getPOSTag("ajar"));
         System.out.println("POS Tag untuk kata mengajar adalah : "+ testpipe.getPOSTag("mengajar"));
         System.out.println("POS Tag untuk kata fikir adalah : "+ testpipe.getPOSTag("fikir"));
         System.out.println("POS Tag untuk kata embun adalah : "+ testpipe.getPOSTag("embun"));
         System.out.println("POS Tag untuk kata english adalah : "+ testpipe.getPOSTag("english"));
+        
         
         System.out.println("Gazeteer untuk kata bandung : "+ testpipe.isGazetteer("bandung"));
         System.out.println("Gazeteer untuk kata bebas : "+ testpipe.isGazetteer("bebas"));
