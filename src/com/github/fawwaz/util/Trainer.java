@@ -12,6 +12,9 @@ import cc.mallet.fst.Transducer;
 import cc.mallet.fst.TransducerEvaluator;
 import cc.mallet.fst.ViterbiWriter;
 import cc.mallet.pipe.Pipe;
+import cc.mallet.pipe.PrintInputAndTarget;
+import cc.mallet.pipe.SerialPipes;
+import cc.mallet.pipe.TokenSequence2FeatureVectorSequence;
 import cc.mallet.pipe.iterator.LineGroupIterator;
 import cc.mallet.types.Alphabet;
 import cc.mallet.types.InstanceList;
@@ -22,6 +25,7 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.ObjectOutputStream;
 import java.io.Reader;
+import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -70,8 +74,14 @@ public class Trainer {
         
         this.modelfile = modelfile;
     }
-
-    public Trainer(Integer num, boolean doFeatureInduction, boolean doPrintViterbi, boolean isConnected, int iterations, double gaussian, String modelfile) {
+    
+    public Trainer(Integer num, 
+            boolean doFeatureInduction, 
+            boolean doPrintViterbi, 
+            boolean isConnected, 
+            int iterations, 
+            double gaussian, 
+            String modelfile) {
         this.numThreads = num;
         this.doFeatureInduction = doFeatureInduction;
         this.doPrintViterbi = doPrintViterbi;
@@ -80,6 +90,28 @@ public class Trainer {
         this.gaussian = gaussian;
         this.modelfile = modelfile;
     }
+
+    // Konstrutkor khusus tesis
+    public Trainer(Integer num, 
+            boolean doFeatureInduction, 
+            boolean doPrintViterbi, 
+            boolean isConnected, 
+            int iterations, 
+            double gaussian, 
+            Integer fold_num,
+            String modelfile) {
+        this.numThreads = num;
+        this.doFeatureInduction = doFeatureInduction;
+        this.doPrintViterbi = doPrintViterbi;
+        this.isConnected = isConnected;
+        this.iterations = iterations;
+        this.gaussian = gaussian;
+        this.fold_num = fold_num;
+        this.modelfile = modelfile;
+        this.forbidden = "\\s";
+        this.allowed = ".*";
+    }
+    
 
     public void train() throws Exception {
         // Insight : 
@@ -96,20 +128,38 @@ public class Trainer {
         //training_file = new FileReader(new File(trainingfile));
         
         // 2.2
-        Pipe pipe = new MyPipe(doFeatureInduction);
-        pipe.getTargetAlphabet().lookupIndex(defaultlabel);
-
-        // 3.1
+        //Pipe pipe = new MyPipe(doFeatureInduction);
+        //pipe.getTargetAlphabet().lookupIndex(defaultlabel);
+        
+        
+        // 2.2 Modified :
+        TesisPipe pipe = new TesisPipe(true);
         pipe.setTargetProcessing(true);
-        trainingData = new InstanceList(pipe);
-        trainingData.addThruPipe(new MyDBIterator(DB_USERNAME,DB_PASSWORD,DB_URL,isTest,fold_num,how_many_fold));
+        pipe.getTargetAlphabet().lookupIndex(defaultlabel);
+        
+        ArrayList<Pipe> pipelist = new ArrayList<>();
+        pipelist.add(pipe);
+        pipelist.add(new TokenSequence2FeatureVectorSequence());
+        //pipelist.add(new PrintInputAndTarget());
+       
+        // 3.1
+        //pipe.setTargetProcessing(true);
+        //trainingData = new InstanceList(pipe);
+        //trainingData.addThruPipe(new MyDBIterator(DB_USERNAME,DB_PASSWORD,DB_URL,isTest,fold_num,how_many_fold));
+        
 
-        logger.info("Jumlah fitur dalam training data : " + pipe.getDataAlphabet().size());
-        logger.info("Number of predicates: " + pipe.getDataAlphabet().size());
+        // 3.1 Modified :
+        SerialPipes serialpipes = new SerialPipes(pipelist);
+        trainingData = new InstanceList(serialpipes);
+        trainingData.addThruPipe(new TesisIterator(true, fold_num));
+        
+
+        logger.info("Jumlah fitur dalam training data : " + serialpipes.getDataAlphabet().size());
+        logger.info("Number of predicates: " + serialpipes.getDataAlphabet().size());
         
         // 5
-        if (pipe.isTargetProcessing()) {
-            Alphabet targets = pipe.getTargetAlphabet();
+        if (serialpipes.isTargetProcessing()) {
+            Alphabet targets = serialpipes.getTargetAlphabet();
             StringBuffer sb = new StringBuffer("Labels :");
             for (int i = 0; i < targets.size(); i++) {
                 sb.append(" ").append(targets.lookupObject(i).toString());

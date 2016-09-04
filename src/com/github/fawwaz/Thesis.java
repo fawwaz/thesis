@@ -19,8 +19,8 @@ public class Thesis {
      */
     public static void main(String[] args) {
         // TODO code application logic here
-        boolean isTraining = false; // untuk training
-        boolean isTesting = true; // untuk labelling (prediction) , evaluating beda lagi.. (ngitung cross validation..)
+        boolean isTraining = true; // untuk training
+        boolean isTesting = false; // untuk labelling (prediction) , evaluating beda lagi.. (ngitung cross validation..)
         Integer fold_num = 1;
         Integer how_many_fold = 4;
         String DB_USERNAME = "root";
@@ -29,14 +29,17 @@ public class Thesis {
         
         
         if(isTraining && !isTesting){
-            String modelname = "percobaan1.model"; // to be writen or read
-            Trainer trainer = new Trainer(modelname,DB_USERNAME,DB_PASSWORD,DB_URL,fold_num,how_many_fold);
+            System.out.println("Doing Training");
+            String modelname = "experiment_24/iteration_"+fold_num+".model"; // to be writen or read
+            //Trainer trainer = new Trainer(modelname,DB_USERNAME,DB_PASSWORD,DB_URL,fold_num,how_many_fold);
+            Trainer trainer = new Trainer(8, false, false, true , 1000, 10.0, 0, modelname);
             try{
                 trainer.train();
             }catch(Exception e){
                 e.printStackTrace();
             }
         }else if(isTesting && !isTraining){
+            System.out.println("Doing Testing / tagging");
             String modelname = "percobaan1.model";
             Tester tester = new Tester(modelname, fold_num, how_many_fold, Tester.FILE);
             try{
