@@ -44,8 +44,14 @@ public class FeatureGenerator {
                    temp2 = new ArrayList<>();
                 } else {
                    String[] splitted = line.split("\\s");
+                   StringBuffer sb = new StringBuffer();
+                   sb.append(splitted[0]);
+                   for (int i = 1; i < splitted.length-1; i++) {
+                        String sp = splitted[i];
+                        sb.append(" "+splitted[i]);
+                   }
                    temp.add(splitted[0]);
-                   temp2.add(splitted[splitted.length-1]);
+                   temp2.add(sb.toString());
                 }
             }
         } catch (IOException e) {
@@ -54,15 +60,27 @@ public class FeatureGenerator {
     }
     
     public void writeTrainingfile() throws IOException{
-        FileWriter writer = new FileWriter(new File("riset_bu_ayu/1.baseline/test_vocab_brown_cluster.txt"));
-        /*
+        FileWriter writer = new FileWriter(new File("riset_bu_ayu/1.baseline/tes_skipgram.txt"));
+        StringBuffer sb = new StringBuffer();
+        for (int i = 0; i < 20; i++) {
+            sb.append("0.0 ");
+        }
+        String default_value = sb.toString().trim();
+        
         for (int i = 0; i < tokens.size(); i++) {
             for (int j = 0; j < tokens.get(i).size(); j++) {
-                //writer.write(tokens.get(i).get(j)+" "+labels.get(i).get(j)+"\n");
+                String _token = tokens.get(i).get(j);
+                if(mapping.containsKey(tokens.get(i).get(j))){
+                    writer.write(_token+" "+mapping.get(_token)+" "+labels.get(i).get(j)+"\n");
+                }else{
+                    writer.write(_token+" "+default_value+" "+labels.get(i).get(j)+"\n");
+                }
+                //writer.write(tokens.get(i).get(j)+"\n");
             }
-            //writer.write("\n");
+            writer.write("\n");
         }
         /**/
+        /*
         List sorted_kata = new ArrayList(katas);
         Collections.sort(sorted_kata);
         Iterator<String> iterator = sorted_kata.iterator();
@@ -74,11 +92,19 @@ public class FeatureGenerator {
                 writer.write(next+"\t"+"0000000000000000"+"\n");
             }
         }
+        /**/
         writer.close();
+        
+        Iterator iter = katas.iterator();
+        int i = 1;
+        while(iter.hasNext()){
+            System.out.println(i+" "+iter.next());
+            i++;
+        }
     }
     
-    public void readBrownCluster(){
-        String filename = "riset_bu_ayu/paths_brown_cluster";
+    public void readSkipGramModel(){
+        String filename = "riset_bu_ayu/word2vecmapping_repaired";
         try (BufferedReader br = new BufferedReader(new FileReader(filename))) {
             String line;
             while ((line = br.readLine()) != null) {
@@ -86,7 +112,11 @@ public class FeatureGenerator {
                    
                 } else {
                    String[] splitted = line.split("\\s");
-                   mapping.put(splitted[1], splitted[0]);
+                   StringBuffer sb = new StringBuffer();
+                   for (int i = 1; i < splitted.length; i++) {
+                       sb.append(splitted[i]+" ");
+                   }
+                   mapping.put(splitted[0], sb.toString().trim());
                 }
             }
         } catch (IOException e) {
@@ -96,7 +126,7 @@ public class FeatureGenerator {
     
     public static void main(String[] args){
         FeatureGenerator generator = new FeatureGenerator();
-        generator.readBrownCluster();
+        generator.readSkipGramModel();
         generator.readTrainingFile();
         try {
             generator.writeTrainingfile();

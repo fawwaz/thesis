@@ -59,16 +59,17 @@ public class TesisPipe extends Pipe{
     private TokenSequence getTokenSequene(ArrayList<String> input){
         TokenSequence ts = new TokenSequence();
         for (int i = 0; i < input.size(); i++) {
+            System.out.println("input : "+input.get(i));
             String[] splitted = input.get(i).split("\\s");
             
             Token _token = new Token(splitted[0]);
             
-            for (int j = 1; j < 101; j++) {
+            for (int j = 1; j < 21; j++) {
                 int urutan = j-1;
                 _token.setFeatureValue("Weight_"+urutan, Double.valueOf(splitted[j]));
             }
             
-            for (int j = 101; j < splitted.length; j++) {
+            for (int j = 21; j < splitted.length; j++) {
                 _token.setFeatureValue(splitted[j], 1.0); // boolean value..
             }
             

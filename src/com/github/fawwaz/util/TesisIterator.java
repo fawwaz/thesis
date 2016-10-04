@@ -35,9 +35,12 @@ public class TesisIterator implements Iterator<Instance>{
         System.out.println("Read input file");
         String filename;
         if(isTraining){
-            filename = "experiment_24/training_merged_"+iteration+".training";
+            //filename = "experiment_24/training_merged_"+iteration+".training";
+            filename = "riset_bu_ayu/3.skip-gram/train_skipgram.txt";
         }else{
-            filename = "experiment_24/testing_merged_"+iteration+".untagged";
+            //filename = "experiment_24/testing_merged_"+iteration+".untagged";
+            filename = "riset_bu_ayu/3.skip-gram/tes_skipgram.txt";
+            
         }
         //String filename = foldername+"incrimental_iteration_"+urutan+"/testing_merged_sub_iteration_"+sub_iteration+".gold_standard";
         try (BufferedReader br = new BufferedReader(new FileReader(filename))) {

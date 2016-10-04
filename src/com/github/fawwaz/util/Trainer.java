@@ -135,7 +135,7 @@ public class Trainer {
         // 2.2 Modified :
         TesisPipe pipe = new TesisPipe(true);
         pipe.setTargetProcessing(true);
-        pipe.getTargetAlphabet().lookupIndex(defaultlabel);
+        //pipe.getTargetAlphabet().lookupIndex(defaultlabel);
         
         ArrayList<Pipe> pipelist = new ArrayList<>();
         pipelist.add(pipe);

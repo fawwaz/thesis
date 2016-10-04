@@ -21,8 +21,8 @@ public class Thesis {
         // TODO code application logic here
         boolean isTraining = true; // untuk training
         boolean isTesting = false; // untuk labelling (prediction) , evaluating beda lagi.. (ngitung cross validation..)
-        Integer fold_num = 1;
-        Integer how_many_fold = 4;
+        Integer fold_num = 0;
+        Integer how_many_fold = 1;
         String DB_USERNAME = "root";
         String DB_PASSWORD = "";
         String DB_URL = "jdbc:mysql://localhost/mytomcatapp";
@@ -30,7 +30,7 @@ public class Thesis {
         
         if(isTraining && !isTesting){
             System.out.println("Doing Training");
-            String modelname = "experiment_24/iteration_"+fold_num+".model"; // to be writen or read
+            String modelname = "riset_bu_ayu/3.skip-gram/skip-gram.model"; // to be writen or read
             //Trainer trainer = new Trainer(modelname,DB_USERNAME,DB_PASSWORD,DB_URL,fold_num,how_many_fold);
             Trainer trainer = new Trainer(8, false, false, true , 1000, 10.0, 0, modelname);
             try{
