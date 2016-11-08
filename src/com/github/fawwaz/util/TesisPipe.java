@@ -44,11 +44,13 @@ public class TesisPipe extends Pipe{
         carrier.setData(tokensequence);
         
         // 2. If targetprocessing / training
+        /*
         if(isTraining){
             ArrayList<String> target = (ArrayList<String>) carrier.getTarget();
             LabelSequence labels = getLabelSequence(target);
             carrier.setTarget(labels);
         }
+        */
         // 2. Add token to token sequence
         
         return carrier; //To change body of generated methods, choose Tools | Templates.
@@ -59,7 +61,7 @@ public class TesisPipe extends Pipe{
     private TokenSequence getTokenSequene(ArrayList<String> input){
         TokenSequence ts = new TokenSequence();
         for (int i = 0; i < input.size(); i++) {
-            System.out.println("input : "+input.get(i));
+            //System.out.println("input : "+input.get(i));
             String[] splitted = input.get(i).split("\\s");
             
             Token _token = new Token(splitted[0]);

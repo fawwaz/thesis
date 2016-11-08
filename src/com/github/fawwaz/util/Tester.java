@@ -77,7 +77,8 @@ public class Tester {
         // 3.3
         pipe.setTargetProcessing(false);
         testdata = new InstanceList(pipe);
-        testdata.addThruPipe(new MyDBIterator(true, fold_num, how_many_fold));
+        //testdata.addThruPipe(new MyDBIterator(true, fold_num, how_many_fold));
+        testdata.addThruPipe(new TesisIterator(true, 0));
 
         // 6.2.ab
         if (output_mode == 1) {
@@ -86,7 +87,7 @@ public class Tester {
             // screen
         } else if (output_mode == 2) {
             try{
-                printToFile("buffer_klasifikasi_ke_"+this.fold_num);
+                printToFile("riset_bu_ayu/3.skip-gram/result.txt");
             }catch(Exception e){
                 e.printStackTrace();
             }

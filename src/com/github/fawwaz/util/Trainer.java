@@ -110,6 +110,7 @@ public class Trainer {
         this.modelfile = modelfile;
         this.forbidden = "\\s";
         this.allowed = ".*";
+        System.out.println("is connected : "+this.isConnected);
     }
     
 
