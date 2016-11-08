@@ -44,15 +44,13 @@ public class TesisPipe extends Pipe{
         carrier.setData(tokensequence);
         
         // 2. If targetprocessing / training
-        /*
-        if(isTraining){
+        if(isTargetProcessing()){
             ArrayList<String> target = (ArrayList<String>) carrier.getTarget();
             LabelSequence labels = getLabelSequence(target);
             carrier.setTarget(labels);
         }
-        */
-        // 2. Add token to token sequence
         
+        // 2. Add token to token sequence
         return carrier; //To change body of generated methods, choose Tools | Templates.
     }
     

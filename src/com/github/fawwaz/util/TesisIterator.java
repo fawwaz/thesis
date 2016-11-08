@@ -34,16 +34,15 @@ public class TesisIterator implements Iterator<Instance>{
     public void doReadInputFile(int iteration) {
         System.out.println("Read input file");
         String filename;
-        /*
+        
         if(isTraining){
             //filename = "experiment_24/training_merged_"+iteration+".training";
             filename = "riset_bu_ayu/3.skip-gram/train_skipgram.txt";
         }else{
-        */
             //filename = "experiment_24/testing_merged_"+iteration+".untagged";
-            filename = "riset_bu_ayu/3.skip-gram/tes_skipgram.txt";
-            
-        //}
+            filename = "riset_bu_ayu/3.skip-gram/tes_skipgram.txt";    
+        }
+        
         //String filename = foldername+"incrimental_iteration_"+urutan+"/testing_merged_sub_iteration_"+sub_iteration+".gold_standard";
         try (BufferedReader br = new BufferedReader(new FileReader(filename))) {
             String line;
@@ -54,14 +53,14 @@ public class TesisIterator implements Iterator<Instance>{
                     tokenized_tweets.add(temp);
                     temp = new ArrayList<>();
                     
-                    /*
+                    
                     if(isTraining){
                         token_label.add(temp2);
                         temp2 = new ArrayList<>();
                     }
-                    */
+                    
                 } else {
-                    /*
+                    
                     if(isTraining){
                         String[] splitted = line.split("\\s");
                         // last one must be label..
@@ -79,9 +78,8 @@ public class TesisIterator implements Iterator<Instance>{
                         
                         temp.add(sb.toString());
                     }else{
-                    */
                         temp.add(line);
-                    /*}*/
+                    }
                     
                 }
             }
@@ -101,13 +99,12 @@ public class TesisIterator implements Iterator<Instance>{
     public Instance next() {
         assert(this.hasNext());
         Instance instance;
-        /*
+        
         if(isTraining){
             instance = new Instance(tokenized_tweets.get(lastid), token_label.get(lastid), null, null);
         }else{
-        */
             instance = new Instance(tokenized_tweets.get(lastid), null, null, null);
-        //}
+        }
         lastid = lastid + 1;
         return instance;
     }

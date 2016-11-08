@@ -78,7 +78,7 @@ public class Tester {
         pipe.setTargetProcessing(false);
         testdata = new InstanceList(pipe);
         //testdata.addThruPipe(new MyDBIterator(true, fold_num, how_many_fold));
-        testdata.addThruPipe(new TesisIterator(true, 0));
+        testdata.addThruPipe(new TesisIterator(false, 0));
 
         // 6.2.ab
         if (output_mode == 1) {

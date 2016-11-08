@@ -30,7 +30,7 @@ public class FeatureGenerator {
     HashMap<String,String> mapping = new HashMap<String, String>();
     
     public void readTrainingFile(){
-        String filename = "riset_bu_ayu/sample-tes2-morph-ort.txt";
+        String filename = "riset_bu_ayu/sample-train2-morph-ort.txt";
         try (BufferedReader br = new BufferedReader(new FileReader(filename))) {
             String line;
             ArrayList<String> temp = new ArrayList<>();
@@ -46,7 +46,7 @@ public class FeatureGenerator {
                    String[] splitted = line.split("\\s");
                    StringBuffer sb = new StringBuffer();
                    sb.append(splitted[0]);
-                   for (int i = 1; i < splitted.length-1; i++) {
+                   for (int i = 1; i < splitted.length; i++) {
                         String sp = splitted[i];
                         sb.append(" "+splitted[i]);
                    }
@@ -60,7 +60,7 @@ public class FeatureGenerator {
     }
     
     public void writeTrainingfile() throws IOException{
-        FileWriter writer = new FileWriter(new File("riset_bu_ayu/1.baseline/tes_skipgram.txt"));
+        FileWriter writer = new FileWriter(new File("riset_bu_ayu/1.baseline/train_skipgram.txt"));
         StringBuffer sb = new StringBuffer();
         for (int i = 0; i < 20; i++) {
             sb.append("0.0 ");
